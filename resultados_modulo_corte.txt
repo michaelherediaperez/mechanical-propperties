@@ -1,0 +1,32 @@
+--- Resultados: Módulo de corte (estimado) ---
+
+Cedro:
+  E_promedio: 3.678 GPa
+  G_min (1/25 * E): 0.147 GPa
+  G_max (1/16 * E): 0.230 GPa
+
+Laurel:
+  E_promedio: 4.035 GPa
+  G_min (1/25 * E): 0.161 GPa
+  G_max (1/16 * E): 0.252 GPa
+
+Nogal:
+  E_promedio: 1.473 GPa
+  G_min (1/25 * E): 0.059 GPa
+  G_max (1/16 * E): 0.092 GPa
+
+Guadua 1:
+  E_promedio: 3.939 GPa
+  G_min (1/25 * E): 0.158 GPa
+  G_max (1/16 * E): 0.246 GPa
+
+Guadua 2:
+  E_promedio: 3.492 GPa
+  G_min (1/25 * E): 0.140 GPa
+  G_max (1/16 * E): 0.218 GPa
+
+Guadua 3:
+  E_promedio: 3.152 GPa
+  G_min (1/25 * E): 0.126 GPa
+  G_max (1/16 * E): 0.197 GPa
+

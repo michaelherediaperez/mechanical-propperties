@@ -1,0 +1,35 @@
+--- Módulos de elasticidad por material ---
+
+Cedro:
+  cedro_1.txt: 2.387 GPa
+  cedro_2.txt: 4.220 GPa
+  cedro_3.txt: 4.426 GPa
+  → Promedio: 3.678 GPa
+
+Laurel:
+  laurel_1.txt: 3.796 GPa
+  laurel_2.txt: 4.412 GPa
+  laurel_3.txt: 3.897 GPa
+  → Promedio: 4.035 GPa
+
+Nogal:
+  nogal_1.txt: 1.930 GPa
+  nogal_2.txt: 1.859 GPa
+  nogal_3.txt: 0.632 GPa
+  → Promedio: 1.473 GPa
+
+Guadua 1:
+  G11.txt: 3.718 GPa
+  G12.txt: 4.160 GPa
+  → Promedio: 3.939 GPa
+
+Guadua 2:
+  G21.txt: 3.326 GPa
+  G22.txt: 3.659 GPa
+  → Promedio: 3.492 GPa
+
+Guadua 3:
+  G31.txt: 3.077 GPa
+  G32.txt: 3.226 GPa
+  → Promedio: 3.152 GPa
+

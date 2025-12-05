@@ -1,0 +1,10 @@
+nogal_1	    3020
+nogal_2	    4140
+nogal_3	    3000
+laurel_1	5060
+laurel_2	5760
+laurel_3	2740
+cedro_1	    5280
+cedro_2	    3700
+cedro_3	    3460
+cedro_4	    2440
