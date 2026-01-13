@@ -361,3 +361,167 @@ with open("resultados_modulo_corte.txt", "w") as f:
         print(f"  G_max (1/16 * E): {G_max/1e9:.3f} GPa\n")
 
 print("Archivo 'resultados_modulo_corte.txt' guardado.")
+
+
+# Para generar las matrices de figuras organizadas en informe de Word
+# -----
+
+# -------------------------
+# Helpers "axis-aware"
+# -------------------------
+def plot_ensayos_compresion_ax(ax, material, lista_archivos, carpeta_base):
+    """Dibuja en un ax la figura 'Ensayos de compresión: MATERIAL'."""
+    for archivo in lista_archivos:
+        ruta = os.path.join(carpeta_base, archivo)
+        carga_kN, actuador_mm, _ = leer_ensayo_compresion(ruta)
+        ax.plot(actuador_mm, carga_kN, label=archivo.replace(".txt", ""), linewidth=2)
+
+    ax.set_title(f"Ensayos de compresión: {material}")
+    ax.set_xlabel("Deformación del actuador [mm]")
+    ax.set_ylabel("Carga [kN]")
+    ax.grid(True, alpha=0.3)
+    ax.legend()
+
+
+def plot_linealizacion_ax(ax, sigma, deform, sigma_lin, deform_lin, modelo, nombre):
+    """Dibuja en un ax la curva completa + puntos lineales + ajuste."""
+    ax.plot(deform, sigma, label="Curva completa", color="gray", alpha=0.6)
+    ax.scatter(deform_lin, sigma_lin, s=10, color="blue", label="Datos lineales usados")
+
+    deform_pred = np.linspace(deform_lin.min(), deform_lin.max(), 100).reshape(-1, 1)
+    sigma_pred = modelo.predict(deform_pred)
+    ax.plot(deform_pred, sigma_pred, color="red", linewidth=2, label="Ajuste lineal")
+
+    ax.set_title(f"Linealización del ensayo: {nombre}")
+    ax.set_xlabel("Deformación unitaria ε [-]")
+    ax.set_ylabel("Esfuerzo σ [Pa]")
+    ax.grid(True, alpha=0.3)
+    ax.legend()
+
+
+# -------------------------
+# Wrappers (opcional): mantienen tus figuras individuales
+# -------------------------
+def graficar_material(material, lista_archivos, carpeta_base):
+    fig, ax = plt.subplots(figsize=(8, 6))
+    plot_ensayos_compresion_ax(ax, material, lista_archivos, carpeta_base)
+    fig.tight_layout()
+
+    ruta_jpg = f"graficos_ensayos_compresion/{material}.jpg"
+    ruta_pdf = f"graficos_ensayos_compresion/{material}.pdf"
+    fig.savefig(ruta_jpg, dpi=300)
+    fig.savefig(ruta_pdf)
+    plt.close(fig)
+
+
+def graficar_ajuste_esfuerzo_deformacion(sigma, deform, sigma_lin, deform_lin, modelo, nombre):
+    fig, ax = plt.subplots(figsize=(8, 6))
+    plot_linealizacion_ax(ax, sigma, deform, sigma_lin, deform_lin, modelo, nombre)
+    fig.tight_layout()
+
+    base = nombre.replace(".txt", "")
+    ruta_jpg = f"graficos_modulos_elasticidad/{base}.jpg"
+    ruta_pdf = f"graficos_modulos_elasticidad/{base}.pdf"
+    fig.savefig(ruta_jpg, dpi=300)
+    fig.savefig(ruta_pdf)
+    plt.close(fig)
+
+from math import ceil
+
+def _exportar_matriz(fig, ruta_pdf, ruta_png=None, dpi_png=300):
+    fig.tight_layout()
+    fig.savefig(ruta_pdf)
+    if ruta_png is not None:
+        fig.savefig(ruta_png, dpi=dpi_png)
+    plt.close(fig)
+
+
+def exportar_matriz_ensayos_compresion(carpeta_base="ensayos-compresion-organizados"):
+    """
+    2x3:
+    Fila 1: Cedro, Laurel, Nogal
+    Fila 2: Guadua 1, Guadua 2, Guadua 3
+    """
+    orden = ["Cedro", "Laurel", "Nogal", "Guadua 1", "Guadua 2", "Guadua 3"]
+
+    fig, axes = plt.subplots(2, 3, figsize=(18, 8))
+    axes = axes.ravel()
+
+    for i, material in enumerate(orden):
+        plot_ensayos_compresion_ax(
+            axes[i],
+            material,
+            ensayos_compresion[material],
+            carpeta_base
+        )
+
+    ruta_pdf = "graficos_ensayos_compresion/ENSAYOS_COMPRESION_MATRIZ.pdf"
+    ruta_png = "graficos_ensayos_compresion/ENSAYOS_COMPRESION_MATRIZ.png"
+    _exportar_matriz(fig, ruta_pdf, ruta_png)
+
+
+def _cargar_y_linealizar(archivo, carpeta_base="ensayos-compresion-organizados"):
+    ruta = os.path.join(carpeta_base, archivo)
+    carga_kN, actuador_mm, _ = leer_ensayo_compresion(ruta)
+    sigma, deform = obtener_esfuerzo_deformacion(carga_kN, actuador_mm)
+
+    params = obtener_parametros_especificos(archivo)
+    sigma_lin, deform_lin, modelo = encontrar_rango_lineal(
+        sigma, deform,
+        inicio_frac=params["inicio_frac"],
+        ventana=params["ventana"],
+    )
+    return sigma, deform, sigma_lin, deform_lin, modelo
+
+
+def exportar_matriz_linealizacion_guaduas(carpeta_base="ensayos-compresion-organizados"):
+    """
+    2x3:
+    Fila 1: G11, G21, G31
+    Fila 2: G12, G22, G32
+    """
+    orden = ["G11.txt", "G21.txt", "G31.txt", "G12.txt", "G22.txt", "G32.txt"]
+
+    fig, axes = plt.subplots(2, 3, figsize=(18, 8))
+    axes = axes.ravel()
+
+    for i, archivo in enumerate(orden):
+        sigma, deform, sigma_lin, deform_lin, modelo = _cargar_y_linealizar(archivo, carpeta_base)
+        plot_linealizacion_ax(axes[i], sigma, deform, sigma_lin, deform_lin, modelo, archivo)
+
+    ruta_pdf = "graficos_modulos_elasticidad/LINEALIZACION_GUADUAS_MATRIZ.pdf"
+    ruta_png = "graficos_modulos_elasticidad/LINEALIZACION_GUADUAS_MATRIZ.png"
+    _exportar_matriz(fig, ruta_pdf, ruta_png)
+
+
+def exportar_matriz_linealizacion_maderas(carpeta_base="ensayos-compresion-organizados"):
+    """
+    3x3:
+    Fila 1: cedro_1, cedro_2, cedro_3
+    Fila 2: laurel_1, laurel_2, laurel_3
+    Fila 3: nogal_1, nogal_2, nogal_3
+    """
+    orden = [
+        "cedro_1.txt", "cedro_2.txt", "cedro_3.txt",
+        "laurel_1.txt", "laurel_2.txt", "laurel_3.txt",
+        "nogal_1.txt", "nogal_2.txt", "nogal_3.txt",
+    ]
+
+    fig, axes = plt.subplots(3, 3, figsize=(18, 12))
+    axes = axes.ravel()
+
+    for i, archivo in enumerate(orden):
+        sigma, deform, sigma_lin, deform_lin, modelo = _cargar_y_linealizar(archivo, carpeta_base)
+        plot_linealizacion_ax(axes[i], sigma, deform, sigma_lin, deform_lin, modelo, archivo)
+
+    ruta_pdf = "graficos_modulos_elasticidad/LINEALIZACION_MADERAS_MATRIZ.pdf"
+    ruta_png = "graficos_modulos_elasticidad/LINEALIZACION_MADERAS_MATRIZ.png"
+    _exportar_matriz(fig, ruta_pdf, ruta_png)
+
+# Figuras individuales (lo que ya hacías)
+graficar_todos()
+
+# Matrices
+exportar_matriz_ensayos_compresion()
+exportar_matriz_linealizacion_guaduas()
+exportar_matriz_linealizacion_maderas()
